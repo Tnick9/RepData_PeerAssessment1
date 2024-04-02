@@ -8,18 +8,73 @@ output:
 
 ## Loading and preprocessing the data
 
+```{r}
+Activity <- read.csv("activity.csv")
+library(tidyverse)
+Activity <-  as_tibble(Activity)
+```
 
 
 ## What is mean total number of steps taken per day?
+What is mean total number of steps taken per day?
+```{r}
+Complete_Activity<- Activity%>%filter(complete.cases(.))
+
+Complete_Activity %>% summarise(sum(steps))
+
+hist(Complete_Activity$steps)
+
+mean_activity_steps<-mean(Activity$steps,na.rm = TRUE)
+
+mean_activity_steps
+
+Complete_Activity %>% summarise(median(steps))
+```
 
 
 
 ## What is the average daily activity pattern?
+```{r}
+Complete_Activity_int<-Complete_Activity %>%group_by(interval) %>% summarize(steps=mean(steps))
 
+with(Complete_Activity_int,plot(interval,steps,type="l"))
+
+Complete_Activity_int %>%group_by(interval) %>%arrange(-steps) %>% filter(steps==max(Complete_Activity_int$steps))
+
+```
+He 835 interval has the highest average steps
 
 
 ## Imputing missing values
+```{r}
+Activity %>%count(steps %in% NA)
+```
+2304 missing values
+```{r}
+Activity2<-Activity %>% mutate(steps=ifelse(steps %in% NA,mean_activity_steps,steps))
 
-
-
+hist(Activity2$steps)
+mean(Activity2$steps)
+median(Activity2$steps)
+```
+By replacing The missing value, the meadian stays the same. The mean didnt change that much.
+ 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+Activity2$date<- as.Date(Activity2$date)
+
+Activity_week<- Activity2 %>% mutate(date=if_else((wday(Activity2$date) %in% 2:6),"Weekday","Weekend"))
+
+Activity_week$date<- as.factor(Activity_week$date)
+
+Activity_weekdays<-Activity_week %>%filter(date=="Weekday") %>% group_by(interval) %>%  summarise(steps=mean(steps))
+
+Activity_weekends<-Activity_week %>% filter(date=="Weekend") %>%  group_by(interval) %>% summarise(steps=mean(steps))
+
+
+plot(Activity_weekdays$interval,Activity_weekdays$steps,type = "l",xlab="interval",ylab="Average steps")
+lines(Activity_weekends$interval,Activity_weekends$steps,col="red")
+legend("topleft",legend=c("Weekday","Weekend"),
+col=c("black","red"),lty=1)
+```
