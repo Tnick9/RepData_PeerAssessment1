@@ -16,20 +16,19 @@ Activity <-  as_tibble(Activity)
 
 
 ## What is mean total number of steps taken per day?
-What is mean total number of steps taken per day?
 ```{r}
-Complete_Activity<- Activity%>%filter(complete.cases(.))
 
-Complete_Activity %>% summarise(sum(steps))
+Total_step_day<-Activity %>%group_by(date) %>%  summarise(steps=sum(steps,na.rm = TRUE))
+png("plot11.png",width = 480,height=480)
+hist(Total_step_day$steps,breaks = 100)
+dev.off()
+mean(Total_step_day$steps)
 
-hist(Complete_Activity$steps)
-
-mean_activity_steps<-mean(Activity$steps,na.rm = TRUE)
-
-mean_activity_steps
-
-Complete_Activity %>% summarise(median(steps))
+median(Total_step_day$steps)
 ```
+
+What is mean total number of steps taken per day?
+
 
 
 
@@ -51,15 +50,19 @@ Activity %>%count(steps %in% NA)
 ```
 2304 missing values
 ```{r}
-Activity2<-Activity %>% mutate(steps=ifelse(steps %in% NA,mean_activity_steps,steps))
+mean_activity<- mean(Activity$steps,na.rm=TRUE)
+Activity2<-Activity %>% mutate(steps=ifelse(steps %in% NA,mean_activity,steps))
 
-hist(Activity2$steps)
-mean(Activity2$steps)
-median(Activity2$steps)
+Total_step_day2<-Activity2 %>% group_by(date) %>% summarise(steps=sum(steps))
+png("plot13.png",width = 480,height=480)
+hist(Total_step_day2$steps,breaks = 100)
+dev.off()
+mean(Total_step_day2$steps)
+median(Total_step_day2$steps)
 ```
-By replacing The missing value, the meadian stays the same. The mean didnt change that much.
- 
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
 
 ```{r}
 Activity2$date<- as.Date(Activity2$date)
@@ -72,9 +75,10 @@ Activity_weekdays<-Activity_week %>%filter(date=="Weekday") %>% group_by(interva
 
 Activity_weekends<-Activity_week %>% filter(date=="Weekend") %>%  group_by(interval) %>% summarise(steps=mean(steps))
 
-
+png("plot14.png",width = 480,height=480)
 plot(Activity_weekdays$interval,Activity_weekdays$steps,type = "l",xlab="interval",ylab="Average steps")
 lines(Activity_weekends$interval,Activity_weekends$steps,col="red")
 legend("topleft",legend=c("Weekday","Weekend"),
 col=c("black","red"),lty=1)
+dev.off()
 ```
