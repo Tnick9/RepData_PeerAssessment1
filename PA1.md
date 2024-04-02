@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+
 ```{r}
 Activity <- read.csv("activity.csv")
 library(tidyverse)
